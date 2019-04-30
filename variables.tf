@@ -55,3 +55,7 @@ variable "route53_records_name" {}
 variable "route53_alias_name" {}
 variable "route53_alias_zone_id" {}
 variable "lb_listener_rule_listener_arn" {}
+
+variable "volume" {
+  default = []
+}

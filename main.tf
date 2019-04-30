@@ -7,6 +7,7 @@ data "template_file" "container_definition" {
 resource "aws_ecs_task_definition" "ecs_service_task_definition" {
   family                = "${var.name}_task_def"
   container_definitions = "${data.template_file.container_definition.rendered}"
+  volume                = "${var.volume}"
 }
 
 ## Service
