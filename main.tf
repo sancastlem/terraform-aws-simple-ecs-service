@@ -26,6 +26,10 @@ resource "aws_ecs_service" "ecs_service" {
     container_name   = "${var.container_name}"
     container_port   = "${var.container_port}"
   }
+
+  lifecycle {
+    ignore_changes = "placement_strategy"
+  }
 }
 
 ## Target group
@@ -42,6 +46,10 @@ resource "aws_lb_target_group" "lb_target_group" {
     healthy_threshold   = 2
     unhealthy_threshold = 2
     timeout             = 9
+  }
+
+  lifecycle {
+    ignore_changes = "lambda_multi_value_headers_enabled"
   }
 }
 
@@ -72,4 +80,3 @@ resource "aws_lb_listener_rule" "lb_listener_rule" {
     values = ["${aws_route53_record.route53_records.name}"]
   }
 }
-
