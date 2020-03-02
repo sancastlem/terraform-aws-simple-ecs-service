@@ -68,6 +68,7 @@ resource "aws_route53_record" "route53_records" {
 
 ## ELB
 resource "aws_lb_listener_rule" "lb_listener_rule" {
+  count        = "${var.elb_path == "" ? 1 : 0}"
   listener_arn = "${var.lb_listener_rule_listener_arn}"
 
   action {
@@ -78,5 +79,26 @@ resource "aws_lb_listener_rule" "lb_listener_rule" {
   condition {
     field  = "host-header"
     values = ["${aws_route53_record.route53_records.name}"]
+  }
+}
+
+## ELB with path
+resource "aws_lb_listener_rule" "lb_listener_rule_path" {
+  count        = "${var.elb_path == "" ? 0 : 1}"
+  listener_arn = "${var.lb_listener_rule_listener_arn}"
+
+  action {
+    target_group_arn = "${aws_lb_target_group.lb_target_group.arn}"
+    type             = "forward"
+  }
+
+  condition {
+    field  = "host-header"
+    values = ["${aws_route53_record.route53_records.name}"]
+  }
+
+  condition {
+    field  = "path-pattern"
+    values = ["${var.elb_path}"]
   }
 }

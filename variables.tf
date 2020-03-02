@@ -59,3 +59,7 @@ variable "lb_listener_rule_listener_arn" {}
 variable "volume" {
   default = []
 }
+
+variable "elb_path" {
+  default = ""
+}
