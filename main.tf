@@ -67,9 +67,48 @@ resource "aws_route53_record" "route53_records" {
   }
 }
 
+## ELB priority
+resource "aws_lb_listener_rule" "lb_listener_rule_priority" {
+  count        = "${var.elb_path == "" && var.elb_priority != "" ? 1 : 0}"
+  listener_arn = "${var.lb_listener_rule_listener_arn}"
+  priority     = "${var.elb_priority}"
+
+  action {
+    target_group_arn = "${aws_lb_target_group.lb_target_group.arn}"
+    type             = "forward"
+  }
+
+  condition {
+    field  = "host-header"
+    values = ["${var.route53_records_name}"]
+  }
+}
+
+## ELB with path priority
+resource "aws_lb_listener_rule" "lb_listener_rule_path_priority" {
+  count        = "${var.elb_path != "" && var.elb_priority != "" ? 1 : 0}"
+  listener_arn = "${var.lb_listener_rule_listener_arn}"
+  priority = "${var.elb_priority}"
+
+  action {
+    target_group_arn = "${aws_lb_target_group.lb_target_group.arn}"
+    type             = "forward"
+  }
+
+  condition {
+    field  = "host-header"
+    values = ["${var.route53_records_name}"]
+  }
+
+  condition {
+    field  = "path-pattern"
+    values = ["${var.elb_path}"]
+  }
+}
+
 ## ELB
 resource "aws_lb_listener_rule" "lb_listener_rule" {
-  count        = "${var.elb_path == "" ? 1 : 0}"
+  count        = "${var.elb_path == "" && var.elb_priority == "" ? 1 : 0}"
   listener_arn = "${var.lb_listener_rule_listener_arn}"
 
   action {
@@ -85,7 +124,7 @@ resource "aws_lb_listener_rule" "lb_listener_rule" {
 
 ## ELB with path
 resource "aws_lb_listener_rule" "lb_listener_rule_path" {
-  count        = "${var.elb_path == "" ? 0 : 1}"
+  count        = "${var.elb_path != "" && var.elb_priority == "" ? 1 : 0}"
   listener_arn = "${var.lb_listener_rule_listener_arn}"
 
   action {

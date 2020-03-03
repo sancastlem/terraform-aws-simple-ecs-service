@@ -53,6 +53,7 @@ variable "health_check_path" {
 variable "route53_records_zone_id" {
   default = ""
 }
+
 variable "route53_records_name" {}
 variable "route53_alias_name" {}
 variable "route53_alias_zone_id" {}
@@ -63,5 +64,9 @@ variable "volume" {
 }
 
 variable "elb_path" {
+  default = ""
+}
+
+variable "elb_priority" {
   default = ""
 }
