@@ -55,6 +55,7 @@ resource "aws_lb_target_group" "lb_target_group" {
 
 ## Route 53
 resource "aws_route53_record" "route53_records" {
+  count   = "${var.route53_records_zone_id == "" ? 0 : 1}"
   zone_id = "${var.route53_records_zone_id}"
   name    = "${var.route53_records_name}"
   type    = "A"
@@ -78,7 +79,7 @@ resource "aws_lb_listener_rule" "lb_listener_rule" {
 
   condition {
     field  = "host-header"
-    values = ["${aws_route53_record.route53_records.name}"]
+    values = ["${var.route53_records_name}"]
   }
 }
 
@@ -94,7 +95,7 @@ resource "aws_lb_listener_rule" "lb_listener_rule_path" {
 
   condition {
     field  = "host-header"
-    values = ["${aws_route53_record.route53_records.name}"]
+    values = ["${var.route53_records_name}"]
   }
 
   condition {

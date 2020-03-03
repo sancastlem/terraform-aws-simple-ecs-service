@@ -50,7 +50,9 @@ variable "health_check_path" {
   default = "/health"
 }
 
-variable "route53_records_zone_id" {}
+variable "route53_records_zone_id" {
+  default = ""
+}
 variable "route53_records_name" {}
 variable "route53_alias_name" {}
 variable "route53_alias_zone_id" {}
