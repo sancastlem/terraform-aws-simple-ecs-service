@@ -31,7 +31,7 @@ variable "deployment_minimum_healthy_percent" {
   description = "Minimum healthy percent of the service in the cluster"
 }
 
-variable depends_on {
+variable dependencies {
   default = []
 
   type = "list"
