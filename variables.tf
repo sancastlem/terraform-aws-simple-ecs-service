@@ -8,7 +8,7 @@ variable "container_definition_template" {
 
 variable "container_definition_vars" {
   description = "Container definition vars"
-  type        = "map"
+  type        = map(string)
 }
 
 variable "service_enable" {
@@ -33,8 +33,7 @@ variable "deployment_minimum_healthy_percent" {
 
 variable dependencies {
   default = []
-
-  type = "list"
+  type = list(string)
 }
 
 variable "health_check_grace_period_seconds" {
