@@ -37,10 +37,6 @@ resource "aws_ecs_service" "ecs_service" {
     container_name   = var.container_name
     container_port   = var.container_port
   }
-
-  lifecycle {
-    ignore_changes = [placement_strategy]
-  }
 }
 
 ## Target group
