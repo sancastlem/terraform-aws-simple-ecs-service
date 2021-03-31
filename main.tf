@@ -9,16 +9,31 @@ resource "aws_ecs_task_definition" "ecs_service_task_definition" {
   container_definitions = data.template_file.container_definition.rendered
   
   dynamic "volume" {
-    for_each = [for v in var.volume : {
-      name = v.name
-      host_path = v.host_path
-    }]
-
+    for_each = var.volume 
     content {
-      name = volume.value.name
-      host_path = volume.value.host_path
-    }
-  } 
+      name      = volume.value.name
+      host_path = lookup(volume.value, "host_path", null)
+
+      dynamic "docker_volume_configuration" {
+        for_each = lookup(volume.value, "docker_volume_configuration", [])
+        content {
+          scope         = lookup(docker_volume_configuration.value, "scope", null)
+          autoprovision = lookup(docker_volume_configuration.value, "autoprovision", null)
+          driver        = lookup(docker_volume_configuration.value, "drive", null)
+          driver_opts   = lookup(docker_volume_configuration.value, "driver_opts", null)
+          labels        = lookup(docker_volume_configuration.value, "labels", null)
+        }
+      }
+
+      dynamic "efs_volume_configuration" {
+        for_each = lookup(volume.value, "efs_volume_configuration", [])
+        content {
+          file_system_id = lookup(efs_volume_configuration.value, "file_system_id", null)
+          root_directory = lookup(efs_volume_configuration.value, "root_directory", null)
+        }
+      }
+    } 
+  }
 }
 
 ## Service
