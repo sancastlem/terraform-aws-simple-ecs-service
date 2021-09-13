@@ -69,3 +69,7 @@ variable "elb_path" {
 variable "elb_priority" {
   default = ""
 }
+
+variable "execution_role_arn" {
+  default = ""
+}
