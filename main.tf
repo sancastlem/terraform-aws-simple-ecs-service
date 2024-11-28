@@ -53,6 +53,21 @@ resource "aws_ecs_service" "ecs_service" {
     container_name   = var.container_name
     container_port   = var.container_port
   }
+
+  dynamic "ordered_placement_strategy" {
+    for_each = var.ordered_placement_strategies
+    content {
+      type  = ordered_placement_strategy.value.type
+      field = ordered_placement_strategy.value.field
+    }
+  }
+
+  dynamic "placement_constraints" {
+    for_each = var.placement_constraints
+    content {
+      type  = placement_constraints.value.type
+    }
+  }
 }
 
 ## Target group

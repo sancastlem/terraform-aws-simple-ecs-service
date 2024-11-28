@@ -73,3 +73,18 @@ variable "elb_priority" {
 variable "execution_role_arn" {
   default = ""
 }
+
+variable "ordered_placement_strategies" {
+  type = list(object({
+    type  = string
+    field = string
+  }))
+  default = []
+}
+
+variable "placement_constraints" {
+  type = list(object({
+    type  = string
+  }))
+  default = []
+}
