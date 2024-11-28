@@ -66,6 +66,7 @@ resource "aws_ecs_service" "ecs_service" {
     for_each = var.placement_constraints
     content {
       type  = placement_constraints.value.type
+      expression = placement_constraints.value.expression
     }
   }
 }

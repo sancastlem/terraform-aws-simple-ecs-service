@@ -85,6 +85,7 @@ variable "ordered_placement_strategies" {
 variable "placement_constraints" {
   type = list(object({
     type  = string
+    expression = string
   }))
   default = []
 }
