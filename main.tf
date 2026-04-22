@@ -48,10 +48,13 @@ resource "aws_ecs_service" "ecs_service" {
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   health_check_grace_period_seconds  = var.health_check_grace_period_seconds
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.lb_target_group.arn
-    container_name   = var.container_name
-    container_port   = var.container_port
+  dynamic "load_balancer" {
+    for_each = var.enable_lb ? [1] : []
+    content {
+      target_group_arn = aws_lb_target_group.lb_target_group[0].arn
+      container_name   = var.container_name
+      container_port   = var.container_port
+    }
   }
 
   dynamic "ordered_placement_strategy" {
@@ -69,10 +72,15 @@ resource "aws_ecs_service" "ecs_service" {
       expression = placement_constraints.value.expression
     }
   }
+
+  lifecycle {
+    create_before_destroy = true
+  } 
 }
 
 ## Target group
 resource "aws_lb_target_group" "lb_target_group" {
+  count = var.enable_lb ? 1 : 0
   name                 = var.name
   vpc_id               = var.vpc_id
   port                 = "80"
@@ -94,26 +102,35 @@ resource "aws_lb_target_group" "lb_target_group" {
 
 ## Route 53
 resource "aws_route53_record" "route53_records" {
-  count   = var.route53_records_zone_id == "" ? 0 : 1
+  count   = var.route53_records_zone_id != "" ? 1 : 0
   zone_id = var.route53_records_zone_id
   name    = var.route53_records_name
   type    = "A"
+  ttl     = 300
 
-  alias {
-    name                   = var.route53_alias_name
-    zone_id                = var.route53_alias_zone_id
-    evaluate_target_health = false
+  # It there is ELB, then create alias
+  dynamic "alias" {
+    for_each = var.enable_lb ? [1] : []
+    content {
+      name                   = var.route53_alias_name
+      zone_id                = var.route53_alias_zone_id
+      evaluate_target_health = false
+    }
   }
+
+  # If not, pointing to IP
+  records = var.enable_lb ? [] : [var.route53_record_ip]
 }
 
 ## ELB priority
 resource "aws_lb_listener_rule" "lb_listener_rule_priority" {
-  count        = var.elb_path == "" && var.elb_priority != "" ? 1 : 0
+  count = var.enable_lb && var.elb_path == "" && var.elb_priority != "" ? 1 : 0
+
   listener_arn = var.lb_listener_rule_listener_arn
   priority     = var.elb_priority
 
   action {
-    target_group_arn = aws_lb_target_group.lb_target_group.arn
+    target_group_arn = aws_lb_target_group.lb_target_group[0].arn
     type             = "forward"
   }
 
@@ -126,12 +143,13 @@ resource "aws_lb_listener_rule" "lb_listener_rule_priority" {
 
 ## ELB with path priority
 resource "aws_lb_listener_rule" "lb_listener_rule_path_priority" {
-  count        = var.elb_path != "" && var.elb_priority != "" ? 1 : 0
+  count = var.enable_lb && var.elb_path != "" && var.elb_priority != "" ? 1 : 0
+
   listener_arn = var.lb_listener_rule_listener_arn
   priority     = var.elb_priority
 
   action {
-    target_group_arn = aws_lb_target_group.lb_target_group.arn
+    target_group_arn = aws_lb_target_group.lb_target_group[0].arn
     type             = "forward"
   }
 
@@ -150,11 +168,12 @@ resource "aws_lb_listener_rule" "lb_listener_rule_path_priority" {
 
 ## ELB
 resource "aws_lb_listener_rule" "lb_listener_rule" {
-  count        = var.elb_path == "" && var.elb_priority == "" ? 1 : 0
+  count = var.enable_lb && var.elb_path == "" && var.elb_priority == "" ? 1 : 0
+
   listener_arn = var.lb_listener_rule_listener_arn
 
   action {
-    target_group_arn = aws_lb_target_group.lb_target_group.arn
+    target_group_arn = aws_lb_target_group.lb_target_group[0].arn
     type             = "forward"
   }
 
@@ -167,11 +186,12 @@ resource "aws_lb_listener_rule" "lb_listener_rule" {
 
 ## ELB with path
 resource "aws_lb_listener_rule" "lb_listener_rule_path" {
-  count        = var.elb_path != "" && var.elb_priority == "" ? 1 : 0
+  count = var.enable_lb && var.elb_path != "" && var.elb_priority == "" ? 1 : 0
+
   listener_arn = var.lb_listener_rule_listener_arn
 
   action {
-    target_group_arn = aws_lb_target_group.lb_target_group.arn
+    target_group_arn = aws_lb_target_group.lb_target_group[0].arn
     type             = "forward"
   }
 

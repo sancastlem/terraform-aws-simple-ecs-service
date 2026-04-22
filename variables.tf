@@ -53,6 +53,18 @@ variable "route53_records_zone_id" {
   default = ""
 }
 
+variable "route53_record_ip" {
+  description = "Public IP to point the A record if there is no ELB"
+  type        = string
+  default     = ""
+}
+
+variable "enable_lb" {
+  description = "Enable creation and attachment of ELB"
+  type        = bool
+  default     = false
+}
+
 variable "route53_records_name" {}
 variable "route53_alias_name" {}
 variable "route53_alias_zone_id" {}
