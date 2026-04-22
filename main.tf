@@ -44,7 +44,7 @@ resource "aws_ecs_service" "ecs_service" {
   cluster                            = var.cluster_id
   task_definition                    = aws_ecs_task_definition.ecs_service_task_definition.arn
   desired_count                      = var.number_of_services
-  iam_role                           = var.role_arn
+  iam_role                           = var.enable_lb ? var.role_arn : null
   deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   health_check_grace_period_seconds  = var.health_check_grace_period_seconds
 
