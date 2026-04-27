@@ -43,6 +43,11 @@ variable "health_check_grace_period_seconds" {
 
 variable "container_name" {}
 variable "container_port" {}
+variable "health_check_port" {
+  description = "Specific port for healthcheck"
+  type        = string
+  default     = "traffic-port"
+}
 variable "vpc_id" {}
 
 variable "health_check_path" {

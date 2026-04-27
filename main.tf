@@ -90,6 +90,7 @@ resource "aws_lb_target_group" "lb_target_group" {
   health_check {
     interval            = 30
     path                = var.health_check_path
+    port                = var.health_check_port
     healthy_threshold   = 2
     unhealthy_threshold = 2
     timeout             = 9
