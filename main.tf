@@ -106,9 +106,8 @@ resource "aws_route53_record" "route53_records" {
   zone_id = var.route53_records_zone_id
   name    = var.route53_records_name
   type    = "A"
-  ttl     = 300
+  ttl     = var.enable_lb ? null : 300
 
-  # It there is ELB, then create alias
   dynamic "alias" {
     for_each = var.enable_lb ? [1] : []
     content {
@@ -118,8 +117,7 @@ resource "aws_route53_record" "route53_records" {
     }
   }
 
-  # If not, pointing to IP
-  records = var.enable_lb ? [] : [var.route53_record_ip]
+  records = var.enable_lb ? null : [var.route53_record_ip]
 }
 
 ## ELB priority
