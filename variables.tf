@@ -73,7 +73,20 @@ variable "enable_lb" {
 variable "route53_records_name" {}
 variable "route53_alias_name" {}
 variable "route53_alias_zone_id" {}
-variable "lb_listener_rule_listener_arn" {}
+variable "lb_listener_rule_listener_arn" {
+  default = ""
+}
+
+variable "lb_type" {
+  description = "Load balance type. Allowed values 'elb' for Application LB (HTTP), 'nlb' for Network LB (TCP)"
+  type        = string
+  default     = "elb"
+
+  validation {
+    condition     = contains(["elb", "nlb"], var.lb_type)
+    error_message = "lb_type must be 'elb' or 'nlb'."
+  }
+}
 
 variable "volume" {
   default = []

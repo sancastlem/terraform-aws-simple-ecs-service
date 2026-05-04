@@ -51,7 +51,7 @@ resource "aws_ecs_service" "ecs_service" {
   dynamic "load_balancer" {
     for_each = var.enable_lb ? [1] : []
     content {
-      target_group_arn = aws_lb_target_group.lb_target_group[0].arn
+      target_group_arn = var.lb_type == "nlb" ? aws_lb_target_group.lb_target_group_nlb[0].arn : aws_lb_target_group.lb_target_group[0].arn
       container_name   = var.container_name
       container_port   = var.container_port
     }
@@ -78,9 +78,9 @@ resource "aws_ecs_service" "ecs_service" {
   } 
 }
 
-## Target group
+## Target group ELB (HTTP/80 — Application Load Balancer)
 resource "aws_lb_target_group" "lb_target_group" {
-  count = var.enable_lb ? 1 : 0
+  count                = var.enable_lb && var.lb_type == "elb" ? 1 : 0
   name                 = var.name
   vpc_id               = var.vpc_id
   port                 = "80"
@@ -98,6 +98,26 @@ resource "aws_lb_target_group" "lb_target_group" {
 
   lifecycle {
     ignore_changes = [lambda_multi_value_headers_enabled]
+  }
+}
+
+## Target group NLB (TCP/<container_port> — Network Load Balancer)
+resource "aws_lb_target_group" "lb_target_group_nlb" {
+  count                = var.enable_lb && var.lb_type == "nlb" ? 1 : 0
+  name                 = var.name
+  vpc_id               = var.vpc_id
+  port                 = var.container_port
+  protocol             = "TCP"
+  target_type          = "instance"
+  deregistration_delay = 60
+
+  health_check {
+    protocol            = "HTTP"
+    path                = var.health_check_path
+    port                = var.health_check_port
+    interval            = 30
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
   }
 }
 
@@ -123,7 +143,7 @@ resource "aws_route53_record" "route53_records" {
 
 ## ELB priority
 resource "aws_lb_listener_rule" "lb_listener_rule_priority" {
-  count = var.enable_lb && var.elb_path == "" && var.elb_priority != "" ? 1 : 0
+  count = var.enable_lb && var.lb_type == "elb" && var.elb_path == "" && var.elb_priority != "" ? 1 : 0
 
   listener_arn = var.lb_listener_rule_listener_arn
   priority     = var.elb_priority
@@ -142,7 +162,7 @@ resource "aws_lb_listener_rule" "lb_listener_rule_priority" {
 
 ## ELB with path priority
 resource "aws_lb_listener_rule" "lb_listener_rule_path_priority" {
-  count = var.enable_lb && var.elb_path != "" && var.elb_priority != "" ? 1 : 0
+  count = var.enable_lb && var.lb_type == "elb" && var.elb_path != "" && var.elb_priority != "" ? 1 : 0
 
   listener_arn = var.lb_listener_rule_listener_arn
   priority     = var.elb_priority
@@ -167,7 +187,7 @@ resource "aws_lb_listener_rule" "lb_listener_rule_path_priority" {
 
 ## ELB
 resource "aws_lb_listener_rule" "lb_listener_rule" {
-  count = var.enable_lb && var.elb_path == "" && var.elb_priority == "" ? 1 : 0
+  count = var.enable_lb && var.lb_type == "elb" && var.elb_path == "" && var.elb_priority == "" ? 1 : 0
 
   listener_arn = var.lb_listener_rule_listener_arn
 
@@ -185,7 +205,7 @@ resource "aws_lb_listener_rule" "lb_listener_rule" {
 
 ## ELB with path
 resource "aws_lb_listener_rule" "lb_listener_rule_path" {
-  count = var.enable_lb && var.elb_path != "" && var.elb_priority == "" ? 1 : 0
+  count = var.enable_lb && var.lb_type == "elb" && var.elb_path != "" && var.elb_priority == "" ? 1 : 0
 
   listener_arn = var.lb_listener_rule_listener_arn
 

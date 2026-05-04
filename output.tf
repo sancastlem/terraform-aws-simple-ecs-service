@@ -5,3 +5,7 @@ output "route53_records_name" {
 output "get_target_group_arn" {
   value = one(aws_lb_target_group.lb_target_group[*].arn)
 }
+
+output "get_nlb_target_group_arn" {
+  value = one(aws_lb_target_group.lb_target_group_nlb[*].arn)
+}
