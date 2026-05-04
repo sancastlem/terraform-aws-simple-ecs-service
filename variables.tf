@@ -78,13 +78,13 @@ variable "lb_listener_rule_listener_arn" {
 }
 
 variable "lb_type" {
-  description = "Load balance type. Allowed values 'elb' for Application LB (HTTP), 'nlb' for Network LB (TCP)"
+  description = "Load balancer type. Allowed values 'elb' for Application LB (HTTP), 'nlb' for Network LB (TCP)"
   type        = string
   default     = "elb"
 
   validation {
     condition     = contains(["elb", "nlb"], var.lb_type)
-    error_message = "lb_type must be 'elb' or 'nlb'."
+    error_message = "Allowed values for lb_type are 'elb' and 'nlb'."
   }
 }
 
